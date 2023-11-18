@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class ProjectControllerTest {
+    //tests in this class are integration tests. controller, service, repository
 
     @Autowired
     private MockMvc mvc;
@@ -85,6 +86,8 @@ class ProjectControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].projectCode").exists())
+                //data[] is the data field in ResponseWrapper
+                //jsonPath() syntax : jayway jsonpath --> https://github.com/json-path/JsonPath
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].assignedManager.userName").isNotEmpty());
 
     }
@@ -104,6 +107,7 @@ class ProjectControllerTest {
     @Test
     public void givenToken_updateProject() throws Exception {
 
+        //let's change the project name for executing update
         projectDTO.setProjectName("Api-cydeo");
 
         mvc.perform(MockMvcRequestBuilders
@@ -142,19 +146,22 @@ class ProjectControllerTest {
 
         RestTemplate restTemplate = new RestTemplate();
 
+        //this header is necessary for Keycloak
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("grant_type", "password");
         map.add("client_id", "ticketing-app");
-        map.add("client_secret", "zn1xr4X3jK2BVou8oCOr2L4Cae2aOPN5");
+//        map.add("client_secret", "zn1xr4X3jK2BVou8oCOr2L4Cae2aOPN5");
+        map.add("client_secret", "3YBAdB5xf8J58XHUAzyO7MBRwqN7xG8k");   //my client secret
         map.add("username", "Ozzy");
         map.add("password", "Abc1");
         map.add("scope", "openid");
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 
+        //we created a "ResponseDTO" class in test/com/cydeo/dto, for deserialization of only the token and not the other fields
         ResponseEntity<ResponseDTO> response =
                 restTemplate.exchange("http://localhost:8080/auth/realms/cydeo-dev/protocol/openid-connect/token",
                         HttpMethod.POST,
